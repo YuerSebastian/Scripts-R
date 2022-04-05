@@ -4,22 +4,21 @@ diremail("D:/Trabajo","jsalinba@utel.edu.mx")
 h1 <- hm("08:30")
 h2 <- hm(paste(hour(now()),minute(now()),sep = ":"))
 #####-------------------------Leyendo base anterior y cruzando-------------------------#####
-Rep <- leer(c("Validación","Principales$"),col_select = c("MATPROG","Responsable","Experto","Recepción"))
+Rep <- leer(c("Validación","Principales$"),col_select = c("MATPROG","Responsable"))
 Base <- leer(c("Inscritos_NI_RI","SIR$")) %>% mutate_at(grep("FECHA",names(.)),~dmy(.))%>%
   arrange(desc(FECHA_DECISION),desc(FECHAINICIO),desc(FECHA_ACTIVIDAD),desc(FECHA_REGISTRO)) %>% mutate(`Clave Programa`=substring(PROGRAMA,1,10),PROGRAMA=substring(PROGRAMA,12))%>%
   unite(MATPROG,MATRICULA,`Clave Programa`,sep = "",na.rm = T,remove = F) %>% filter(!duplicated(MATPROG))
 #Se genera la validación únicamente si no existe pérdida de datos.
 if (length(rownames(Base))>=length(rownames(Rep))) {
-  Base <- left_join(Base,Rep,by="MATPROG") %>% mutate_at(c("Responsable","Experto","Recepción"),~replace_na(.,"N"))
+  Base <- left_join(Base,Rep,by="MATPROG") %>% mutate(Responsable=if_else(is.na(Responsable),"N",Responsable))
   #####-------------------------Asignando nuevos-------------------------#####
-  x <- c("Responsable","Experto","Recepción"); Rep2 <- leer(c("Info General","gsheet"),sheet="Validación",secc="Responsables")
   Rep <- filter(Base,Responsable=="N")
-  for (i in 1:length(x)) {
-    cont <- count(Base,Base[x[i]])
-    Rep3 <- Rep2[x[i]] %>% filter(!is.na(.[,1])) %>% left_join(cont,by=x[i]) %>% arrange(n) %>% .[[x[i]]]
-    Rep[x[i]] <- rep_len(Rep3,length(rownames(Rep)))
+  if (length(rownames(Rep))>0) {
+    cont <- count(Base,Responsable)
+    x <- leer(c("Info General","gsheet"),sheet="Validación",secc="Responsables") %>% left_join(cont,by="Responsable") %>% arrange(n) %>% .[["Responsable"]]
+    Rep <- mutate(Rep,Responsable=rep_len(x,length(rownames(Rep))))
+    Base <- filter(Base,Responsable!="N") %>% rbind(Rep); remove(x,cont)
   }
-  Base <- filter(Base,Responsable!="N") %>% rbind(Rep); remove(Rep2,Rep3,cont,x)
   #####-------------------------Info General-------------------------#####
   x <- c("ESTATUS_CODE","NIVEL","DECISION","CAMPUS","CANAL_FINAL"); y <- c("Estatus","Niveles","Decisiones","Campus","Campus Canales")
   Rep <- leer(c("1OQENajkU5Z4L7MS7FNhrvrMBS1iT-EOc5oiON9FXcns","gsheet.ID"),sheet = "General")
@@ -38,8 +37,9 @@ if (length(rownames(Base))>=length(rownames(Rep))) {
                  Acción=if_else(Decisión=="Por validar",
                                 if_else(CANAL_FINAL=="B12"|CANAL_FINAL=="CONVERTIA"|CANAL_FINAL=="MAD TORO MEDIA"|CANAL_FINAL=="RESPONSABILIDAD SOCIAL","Prioridad",
                                         if_else(CANAL_FINAL=="REINGRESOS"|TIPO=="FUTURO"|TIPO=="NUEVO INGRESO"|TIPO=="REINGRESO","Trabajar","_")),"_"),
-                 Días=if_else(Decisión=="Por validar",
-                              as.integer(as.Date(now())-FECHA_ACTIVIDAD),-1L),
+                 DECISION=if_else(is.na(DECISION),"Por validar",DECISION),
+                 Días=if_else(!is.na(FECHA_ACTIVIDAD),if_else(Decisión=="Por validar",
+                                                              as.integer(as.Date(now())-FECHA_ACTIVIDAD),-1L),-2L),
                  `Ultima Actualización`="_")
   Base$`Ultima Actualización`[1] <- as.character(now())
   #####-------------------------Rechazos-------------------------#####
