@@ -6,7 +6,7 @@ h2 <- hm(paste(hour(now()),minute(now()),sep = ":"))
 shell("C:/Users/Jsalinba/Documents/SCRIPTS/Python/Validacion.py")#Script py
 #####-------------------------Leyendo base anterior y cruzando-------------------------#####
 Rep <- leer(c("Validación","Principales$"),col_select = c("MATPROG","Responsable"))
-Base <- leer("C:/Users/Jsalinba/Documents/SIR Reportes/Validación/Descargas/Inscritos_NI_RI.csv") %>% mutate_at(grep("FECHA",names(.)),~dmy(.))%>%
+Base <- leer(c("Inscritos_NI_RI","SIR$")) %>% mutate_at(grep("FECHA",names(.)),~dmy(.))%>%
   arrange(desc(FECHA_DECISION),desc(FECHAINICIO),desc(FECHA_ACTIVIDAD),desc(FECHA_REGISTRO)) %>% mutate(`Clave Programa`=substring(PROGRAMA,1,10),PROGRAMA=substring(PROGRAMA,12))%>%
   unite(MATPROG,MATRICULA,`Clave Programa`,sep = "",na.rm = T,remove = F) %>% filter(!duplicated(MATPROG))
 #Se genera la validación únicamente si no existe pérdida de datos.
