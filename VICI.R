@@ -1,4 +1,4 @@
-library(dplyr);library(lubridate);library(tidyr);library(readr);library(readxl)
+library(MultiLEDS);library(dplyr);library(lubridate);library(tidyr);library(readr);library(readxl)
 #Variables principales.
 c <- list.dirs("D:/Trabajo")
 #Funciones
