@@ -1,82 +1,71 @@
-library(dplyr);library(lubridate);library(tidyr);library(readr);library(readxl)
-c <- list.dirs("D:/Trabajo")
-#Funciones
-leer_arch <- function(c,tipo="csv",arch=NULL,pat=NULL,...){
-  #Resume la lectura que se usa siempre para los reportes, se pueden usar opciones adicionales de las funciones internas.
-  if (tipo=="csv") {
-    x <- read_csv(paste(c[grep(pat,c)],paste(arch,tipo,sep = "."),sep = "/"),locale = locale(encoding = "LATIN1"),col_types = cols(.default = "c"),...)
-  }else if (tipo=="xlsx"){
-    x <- read_excel(paste(c[grep(pat,c)],paste(arch,tipo,sep = "."),sep = "/"),col_types = "text",...)
-  }else if (tipo=="txt"){
-    x <- read_delim(paste(c[grep(pat,c)],paste(arch,tipo,sep = "."),sep = "/"),locale = locale(encoding = "LATIN1"),col_types = cols(.default = "c"),...)
-  }else if (tipo=="gsheet"){
-    x <- range_speedread(c[length(c)],col_types = cols(.default = "c"),...)
-  }else{x <- "Tipo incorrecto."}
-  return(x)
-}
-impr_arch <- function(c,x,tipo="csv",arch=NULL,pat=NULL,...){
-  write.csv(x,paste(c[grep(pat,c)],paste(arch,tipo,sep="."),sep="/"),row.names = F,...)
-}
-Base <- leer_arch(c,"csv","Historial_Academico_Compactado","Escolares$") %>% filter(ESTATUS=="MATRICULADO")
+library(dplyr);library(lubridate);library(tidyr);library(readr);library(readxl);library(MultiLEDS)
+diremail("D:/Trabajo","jsalinba@utel.edu.mx")
+Base <- leer(c("Historial Académico Compactado","SIR$")) %>% unite(Clave,MATRICULA,PROGRAMA,PERIODO_CATALOGO,remove=F) %>% filter(!duplicated(Clave))
 #Campus
-Rep <- leer_arch(c,"xlsx","Info general","Trabajo$",sheet="Campus") %>% select(-`Fecha Campus`) %>% rename("CAMPUS"=Campus)
-Base <- left_join(Base,Rep,by="CAMPUS")
-Rep <- leer_arch(c,"xlsx","Info general","Trabajo$",sheet="Niveles") %>% rename("NIVEL"=Nivel)
-Base <- left_join(Base,Rep,by="NIVEL")
-#Inicio
-#Dividiendo base
-Rep <- filter(Base,NIVEL=="DO")
-Base <- filter(Base,NIVEL!="DO")
-#Niveles sin doctorado
-Base <- mutate_at(Base,8:12,~as.integer(.))%>%
+Rep <- leer(c("Info General","gsheet"),sheet="General")
+Rep2 <- extr_secc(Rep,"Campus") %>% select(-`Fecha Campus`) %>% rename("CAMPUS"=`Clave Campus`)
+Base <- left_join(Base,Rep2,by="CAMPUS")
+#Niveles
+Rep2 <- extr_secc(Rep,"Niveles") %>% rename("NIVEL"=`Clave Nivel`)
+Base <- left_join(Base,Rep2,by="NIVEL")
+#Dividiendo base (Doctorado y los demás)
+Rep <- filter(Base,NIVEL=="DO") %>% select(-`Regla Negocio`)
+Base <- filter(Base,NIVEL!="DO") %>% select(-`Regla Negocio`)
+#Niveles sin doctorado, son bimestrales.
+Base <- mutate_at(Base,10:14,~as.integer(.))%>%
   mutate(`Ene-Feb`= APROBADAS+EN_CURSO,
          `Mar-Abr`= `Ene-Feb`+EN_CURSO,
          `May-Jun`= `Mar-Abr`+EN_CURSO,
          `Jul-Ago`= `May-Jun`+EN_CURSO,
          `Sep-Oct`= `Jul-Ago`+EN_CURSO,
          `Nov-Dic`= `Sep-Oct`+EN_CURSO,
-         `Ene-Feb 2023`= `Nov-Dic`+EN_CURSO,
-         `Mar-Abr 2023`= `Ene-Feb 2023`+EN_CURSO,
-         `May-Jun 2023`= `Mar-Abr 2023`+EN_CURSO,
-         `Jul-Ago 2023`= `May-Jun 2023`+EN_CURSO,
-         `Sep-Oct 2023`= `Jul-Ago 2023`+EN_CURSO,
-         `Nov-Dic 2023`= `Sep-Oct 2023`+EN_CURSO)%>%
-  mutate_at(17:length(.),~if_else(.>=TOTAL,.-(.-TOTAL),0L))
+         `Ene-Feb 2024`= `Nov-Dic`+EN_CURSO)%>%
+  mutate_at(19:length(.),~if_else(.>=TOTAL,.-(.-TOTAL),0L))
 
-x <- names(Base)[17:length(Base)]
+x <- names(Base)[19:length(Base)]
 Base <- mutate(Base,Egreso="_")
 for (i in length(x):1) {
   Base <- mutate(Base,Egreso=if_else(Base[x[i]]!=0,x[i],Egreso))
 }
-Base <- Base[c(names(Base)[1:16],"Egreso")]
-#Nivel doctorado
-Rep <- mutate_at(Rep,8:12,~as.integer(.))%>%
-  mutate(`Mar-Abr`= APROBADAS+EN_CURSO,
-         `Jul-Ago`= `Mar-Abr`+EN_CURSO,
-         `Nov-Dic`= `Jul-Ago`+EN_CURSO,
-         `Mar-Abr 2023`= `Nov-Dic`+EN_CURSO,
-         `Jul-Ago 2023`= `Mar-Abr 2023`+EN_CURSO,
-         `Nov-Dic 2023`= `Jul-Ago 2023`+EN_CURSO)%>%
-  mutate_at(17:length(.),~if_else(.>=TOTAL,.-(.-TOTAL),0L))
 
-x <- names(Rep)[17:length(Rep)]
+Base <- Base[c(names(Base)[1:18],"Egreso")]
+#Nivel doctorado,n son cuatrimestrales
+Rep <- mutate_at(Rep,10:14,~as.integer(.))%>%
+  mutate(`Ene-Abr`= APROBADAS+EN_CURSO,
+         `May-Ago`= `Ene-Abr`+EN_CURSO,
+         `Sep-Dic`= `May-Ago`+EN_CURSO,
+         `Ene-Abr 2024`= `Sep-Dic`+EN_CURSO)%>%
+  mutate_at(19:length(.),~if_else(.>=TOTAL,.-(.-TOTAL),0L))
+
+x <- names(Rep)[19:length(Rep)]
 Rep <- mutate(Rep,Egreso="_")
 for (i in length(x):1) {
   Rep <- mutate(Rep,Egreso=if_else(Rep[x[i]]!=0,x[i],Egreso))
 }
-Rep <- Rep[c(names(Rep)[1:16],"Egreso")]
+Rep <- Rep[c(names(Rep)[1:18],"Egreso")]
 #Uniendo ambas bases divididas y separando año
 Base <- rbind(Base,Rep)
 Base <- mutate(Base,Año=if_else(Egreso!="_",
-                                if_else(grepl(" 2023",Egreso),2023L,2022L),0L)) %>% mutate(Egreso=gsub(" 2023","",Egreso))
-#Reordenar e aimprimir
-Base <- select(Base,"Matrícula"=MATRICULA,"Nombre"=NOMBRE,"Programa"=PROGRAMA,"Nombre Programa"=NOMBRE_PROGRAMA,"Campus"=CAMPUS,`Descripción Campus`,`Tipo Campus`,
-               `Descripción Nivel`,"Avance"=AVANCE,Egreso,Año,"En Curso"=EN_CURSO,"Por Cursar"=POR_CURSAR,"Total"=TOTAL) %>% mutate_all(~as.character(.))%>%
+                                if_else(grepl(" 2024",Egreso),2024L,2023L),0L)) %>% mutate(Egreso=gsub(" 2024| 2025","",Egreso))
+#Reordenando, renombrando, tipificando orden de los bimestres e imprimiendo.
+Base <- select(Base,Clave,"Matrícula"=MATRICULA,"Nombre"=NOMBRE,"Clave Programa"=PROGRAMA,"Programa"=NOMBRE_PROGRAMA,"Periodo Catalogo"=PERIODO_CATALOGO,"Clave Campus"=CAMPUS,
+               Campus,`Tipo Campus`,Nivel,"Estatus"=ESTATUS,"Avance"=AVANCE,Egreso,Año,"En Curso"=EN_CURSO,"Por Cursar"=POR_CURSAR,"Total"=TOTAL) %>% mutate_all(~as.character(.))%>%
   mutate_all(~replace_na(.,"_"))
 Base <- mutate(Base,Orden=if_else(Egreso=="Ene-Feb",1L,
                                   if_else(Egreso=="Mar-Abr",2L,
-                                          if_else(Egreso=="May-Jun",3L,
-                                                  if_else(Egreso=="Jul-Ago",4L,
-                                                          if_else(Egreso=="Sep-Oct",5L,
-                                                                  if_else(Egreso=="Nov-Dic",6L,7L)))))))
-impr_arch(c,Base,"csv","Proyección Egresos","Principales$")
+                                          if_else(Egreso=="Ene-Abr",3L,
+                                                  if_else(Egreso=="May-Jun",4L,
+                                                          if_else(Egreso=="Jul-Ago",5L,
+                                                                  if_else(Egreso=="May-Ago",6L,
+                                                                          if_else(Egreso=="Sep-Oct",7L,
+                                                                                  if_else(Egreso=="Nov-Dic",8L,
+                                                                                          if_else(Egreso=="Sep-Dic",9L,10L))))))))))
+escribir(Base,c("Proyección Egresos.csv","Principales$"))
+
+
+
+
+
+
+
+

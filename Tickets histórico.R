@@ -75,7 +75,10 @@ Base <- mutate(Base,Responsable=if_else(Identificador=="TEQREV-555","Viviana Ing
 #-----
 
 #Imprimiendo
-impr_arch(c,Base,"csv","Tickets Histórico","Históricos$")
+Rep <- leer_arch(c,"csv","Tickets histórico","Históricos$",lazy=F) %>% mutate(Matrícula=if_else(nchar(Matrícula)<9,paste("0",Matrícula,sep=""),Matrícula))
+
+
+impr_arch(c,Rep,"csv","Tickets Histórico","Históricos$",fileEncoding="LATIN1")
 
 
 

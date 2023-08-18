@@ -5,6 +5,8 @@ library(lubridate)
 library(readxl)
 library(readr)
 library(googlesheets4)
+library(MultiLEDS)
+diremail("D:/Trabajo","jsalinba@utel.edu.mx")
 #Variables iniciales
 c_G <- "D:/Cosa/Equi y Reva"
 c_D <- paste(c_G,"Descargas",sep = "/")
@@ -88,7 +90,7 @@ Rep <- left_join(Rep,cont,by="matricula")
 Rep2 <- read_excel(paste(c_I,"Info_general.xlsx",sep="/"),sheet = "Agentes")
 Rep <- left_join(Rep,Rep2,by="agente")
 
-write.csv(Rep,paste(c_G,"CRM_Interacciones_His.csv",sep="/"),row.names = F)
+write.csv(Rep,paste(c_G,"CRM_Interacciones_His.csv",sep="/"),row.names = F,fileEncoding = "LATIN1")
 #Cruzando info
 Rep <- select(Rep,matricula,agente,fecha_hora,id_llamada,estado_llamada,tipifica_oper)%>%
   mutate(fecha_hora=ymd_hms(fecha_hora),matricula=if_else(nchar(matricula)==8,paste("0",matricula,sep = ""),matricula)) %>% arrange(desc(fecha_hora))%>%
@@ -152,18 +154,17 @@ Docs <- mutate(Docs, Documentos_faltantes=replace(Documentos_faltantes,Documento
 Docs$Documentos_faltantes <- gsub("-"," ",Docs$Documentos_faltantes)
 remove(x)#-----X
 #####---------------------------------------Docs Moy---------------------------------------#####
-Rep <- range_speedread("1HJJyzyAWIz7TxqzEOFsAxmVBmgaMZpl_Jp9Nv3JmDbc",sheet="Documentos",col_types = cols(.default = "c"))%>%
+Rep <- leer(c("Recolección Documentos","auxiliares$"))%>%
   mutate(MATRICULA=if_else(nchar(MATRICULA)<9,paste("0",MATRICULA,sep=""),MATRICULA)) %>% unite(MATPROG,MATRICULA,PROGRAMA,sep="")%>%
-  reshape::rename(c(`estatus expediente`="Docs_físicos",`expediente digital`="Docs_digitales",`Fecha recu`="Fecha_DF",`Fecha dig`="Fecha_DD"))%>%
-  arrange(desc(Fecha_DD),desc(Fecha_DF)) %>% filter(!duplicated(MATPROG)) %>% select(MATPROG,Equivalencia,Tipo_Ingreso)
+  reshape::rename(c(`estatus expediente`="Docs_físicos",`expediente digital`="Docs_digitales",`Fecha recu`="Fecha_DF"))%>%
+  arrange(desc(Fecha_DF)) %>% filter(!duplicated(MATPROG)) %>% select(MATPROG,Equivalencia,Tipo_Ingreso)
 Docs <- left_join(Docs,Rep,by="MATPROG") %>% mutate(Equivalencia=if_else(is.na(Equivalencia),"Incompleto",Equivalencia))
 #####---------------------------------------Re ordenando e imprimiendo---------------------------------------#####
 Docs <- mutate(Docs,Ult_Act=as.character(now()),PRIMER_INSCRIPCION_SIN_ESTATUS=dmy(PRIMER_INSCRIPCION_SIN_ESTATUS))
 Rep <- read_excel(paste(c_I,"Info_general.xlsx",sep="/"),sheet = "Orden")
 Rep <- Rep$Incluir
 Docs <- Docs[Rep] %>% mutate_all(~as.character(.)) %>% mutate_all(~replace(.,is.na(.),"_"))
-write.csv(Docs,paste(c_G,"Equi y Reva2.csv",sep="/"),row.names = F,na = "_")
-
+write.csv(Docs,paste(c_G,"Equi y Reva2.csv",sep="/"),row.names = F,na = "_",fileEncoding = "LATIN1")
 
 
 

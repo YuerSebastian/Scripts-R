@@ -51,10 +51,14 @@ Base <- mutate_all(Base,~as.character(.)) %>% mutate_all(~replace_na(.,"_"))
 impr_arch(c,Base,"csv","KPI's-Recolección","auxiliares$")
 
 #####----------------------------------------Cert y Tit (Contactación,Drive)----------------------------------------#####
-Base <- leer_arch(c,"gsheet",sheet="Cert y Tit",range="A2:M") %>% mutate(Fecha=parse_date_time(Fecha,c("%m/%Y")))%>%
-  melt(id.vars="Fecha",measure.vars=2:length(.),value.name="Totales",variable.name="Motivo") %>% arrange(desc(Fecha))%>%
-  mutate(`Tipo Contacto`=if_else(Motivo=="Remarcaciones","Remarcaciónes","Contactadas"))
-Base <- Base[c("Fecha","Motivo","Tipo Contacto","Totales")]
+Base <- leer_arch(c,"gsheet",sheet="Cert y Tit",range="A1:M") %>% mutate(Fecha=parse_date_time(Fecha,c("%m/%Y")))%>%
+  melt(id.vars="Fecha",measure.vars=2:length(.),value.name="Totales",variable.name="Motivo")
+B <- dcast(Base,Fecha~Motivo)
+
+
+# %>% arrange(desc(Fecha))%>%
+#   mutate(`Tipo Contacto`=if_else(Motivo=="Remarcaciones","Remarcaciónes","Contactadas"))
+# Base <- Base[c("Fecha","Motivo","Tipo Contacto","Totales")]
 #Imprimiendo
 impr_arch(c,Base,"csv","KPI's-Cert y Tit","auxiliares")
 #####----------------------------------------Cert y Tit----------------------------------------#####

@@ -4,7 +4,8 @@ library(lubridate)
 library(stringi)
 library(readr)
 library(readxl)
-
+library(MultiLEDS)
+diremail("D:/Trabajo","jsalinba@utel.edu.mx")
 #####---------------------------------Servicio Social---------------------------------#####
 c_Gen <- "D:/Cosa/SIR/Servicio social/"
 c_Desc <- paste(c_Gen,"Descargas/",sep = "")
@@ -70,11 +71,24 @@ Aux <- left_join(Aux,Aux2,by="agente") %>% filter(Si=="Si")%>%
   mutate_all(~replace(.,is.na(.),"_")) %>% reshape::rename(c(matricula="MATRICULA"))
 Base_SS <- left_join(Base_SS,Aux,by="MATRICULA")
 Base_SS <- mutate_all(Base_SS,~replace(.,is.na(.),"_"))
+#####---------------------------------Campus---------------------------------#####
+Aux <- leer(c("Info General","gsheet"),secc = "Campus") %>% select("CAMPUS"=`Clave Campus`,`Tipo Campus`)
+Base_SS <- left_join(Base_SS,Aux,by="CAMPUS")
+Base_SS <- filter(Base_SS,!`Tipo Campus` %in% c("OPM","Alianzas UTL"))
 #####---------------------------------Imprimiendo---------------------------------#####
 Aux <- read_excel(paste(c_Info,"Info_general.xlsx",sep = ""),sheet = "Orden")
 Aux <- Aux$Incluir
 Base_SS <- Base_SS[Aux]
-write.csv(Base_SS,paste(c_Gen,"Avance SS.csv",sep=""),row.names = F)
+write.csv(Base_SS,paste(c_Gen,"Avance SS.csv",sep=""),row.names = F,fileEncoding = "LATIN1")
+
+
+
+
+
+
+
+
+
 
 
 
