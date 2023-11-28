@@ -1,6 +1,6 @@
-sapply(c("MultiLEDS","dplyr","tidyr","lubridate"),library,character.only=T)
+sapply(c("MultiLEDS","dplyr","tidyr","lubridate","stringr"),library,character.only=T)
 diremail("D:/Trabajo","jsalinba@utel.edu.mx")
-f <- as.Date("2023-05-01")
+f <- as.Date("2023-10-23")#2023-10-23
 #####--------Descargas--------#####
 drive_sd("des",c("Reports/Activities_Mae.csv","auxiliares$"))
 drive_sd("des",c("Reports/cal_exas_Mae.csv","auxiliares$"))
@@ -32,7 +32,7 @@ for (i in 1:15) {
 Base <- select(Base,-Fecha2)
 #Bloque,Semaforo y NR
 f <- Sys.Date()
-Rep <- leer(c(paste("NR_POSGRADOS_",Sys.Date(),sep=""),"Originales/NR$"),col_select=c("Matrícula"=Matricula,"Bloque",Ciclo,Semaforo)) %>% filter(Ciclo %in% c("2023-05-01","2023-05-29")) %>%
+Rep <- leer(c(paste("NR_POSGRADOS_",Sys.Date(),sep=""),"Originales/NR$"),col_select=c("Matrícula"=Matricula,"Bloque",Ciclo,Semaforo)) %>% filter(Ciclo %in% c("2023-10-23","2023-09-25")) %>%
   mutate(Matrícula=if_else(nchar(Matrícula)<9,paste("0",Matrícula,sep=""),Matrícula)) %>% select(-Ciclo) %>% filter(!duplicated(Matrícula))
 Base <- left_join(Base,Rep,by="Matrícula")
 #NR
@@ -41,8 +41,9 @@ Rep <- leer(c(paste("Sabana_POSGRADOS_",Sys.Date(),sep=""),"Originales/Sabana$")
 Base <- unite(Base,Clave,Matrícula,Ciclo,remove = F) %>% left_join(Rep,by="Clave")
 #Tipo Actividad
 #Base <- gsub("\"","",Base)
-Base <- mutate_all(Base,~gsub("\"","",.))#Se quitan comillas
+Base <- mutate_all(Base,~gsub('[""\\.]',"",.))#Se quitan comillas
 Rep <- leer(c("Actividades y examenes","Bases$"),sheet="Mae")
+Base <- mutate(Base,Actividad=str_trim(Actividad))
 Base <- list("Actividades"=filter(Base,`Tipo Evaluación`=="Actividad"),"Examenes"=filter(Base,`Tipo Evaluación`=="Examen"))
 #Actividades
 Base$Actividades <- left_join(Base$Actividades,extr_secc(Rep,"Actividades"),by="Actividad")
@@ -56,6 +57,21 @@ Base <- Base[c("MATEGRUP","Matrícula","Programa","Ciclo","Bloque","Inicio Plus",
 escribir(Base,c("Actividades Bimestrales Pos.csv","Principales$"))
 
 
+# Rep <- filter(Base,`Tipo Actividad`=="_") %>% count(Actividad,`Tipo Evaluación`)
+# 
+# 
+# 
+# escribir(Rep,c("Act.csv","Bases$"))
+
+
+
+
+devtools::install_github("ManuelHentschel/vscDebugger")
+
+
+
+
+install.packages("D:/Scripts/Github/R/MultiLEDS_1.2.2.tar.gz")
 
 
 

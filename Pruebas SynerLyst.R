@@ -15,7 +15,7 @@ tip_mens <- function(fun = "leer", tip = "men"){
       llam <- "warning"
     }
     else if (tip == "det"){
-      mens <- paste0("El ",bold("directorio")," que especificaste con el patron ",bold$blue("Papadopolus$")," no existe.")
+      mens <- paste0("El ",bold("directorio")," que especificaste con el patron ",bold$blue("Algo$")," no existe.")
       enc <- magenta(paste0("\n",strrep("=",nchar(strip_style(mens))),"\n"))
       llam <- "stop"
     }

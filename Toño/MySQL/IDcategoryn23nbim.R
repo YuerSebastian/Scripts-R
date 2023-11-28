@@ -1,0 +1,17 @@
+###ID Category####
+
+ID_Category1="(15,16)"
+ID_Category2="(21,22)"
+ID_Category3="(11)"
+ID_Category4="(11)"
+ID_Category5="(11)"
+ID_Category6="(11)"
+ID_Category7="(11)"
+ID_Category8="(11)"
+ID_Category9="(11)"
+ID_Category10="(13)"
+ID_Category11="(27)"
+ID_Category12="(1339)"
+ID_Category13="(98,99,100,101,102,103)"
+ID_Category14="(142,143,146,151,154,155)"
+ID_Category15="(31,32,34)"

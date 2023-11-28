@@ -1,4 +1,4 @@
-sapply(c("vroom","dplyr","stringr","tidyr","data.table"), library, character.only = T)
+sapply(c("vroom","dplyr","stringr","tidyr","data.table","googlesheets4","lubridate"), library, character.only = T)
 #####-----Leyendo-----#####
 #Leyendo csv, con codificación "LATIN1", todas las columnas en tipo caracter y seleccionando solo MATRICULA y ESTUDIANTE cambiando su nombre
 Base <- vroom("D:/Trabajo/Bases/Originales/SIR/Estatus General Alumnos.csv",",",locale = locale(encoding = "LATIN1"),col_types = cols(.default = "c"),
@@ -23,12 +23,14 @@ Base <- fwrite(Base,"D:/Trabajo/Bases/Principales/Nombres EG arreglados.csv",bom
 
 
 
+gs4_auth("jsalinba@utel.edu.mx")
+
+Base <- read_sheet("1OQENajkU5Z4L7MS7FNhrvrMBS1iT-EOc5oiON9FXcns",range = "A2:C") %>% filter(!is.na(Estatus),Estatus != "_")
 
 
 
 
-
-
+write.csv(Base,"D:/Trabajo/Estatus.csv",quote = T,na = "",fileEncoding = "LATIN1",row.names = F)
 
 
 
