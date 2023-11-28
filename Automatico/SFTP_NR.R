@@ -1,0 +1,1 @@
+source("C:/Users/jsalinba.SCALA/Documents/Reportes/Scripts/R/SFTP_Inconcert.R",encoding = "LATIN1")
