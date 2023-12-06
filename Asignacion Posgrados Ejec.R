@@ -12,8 +12,9 @@ Base <- leer(c("Inscritos NIRI","SIR$"),col_select=c("Matricula"=MATRICULA,"Nomb
   filter(DECISION=="35",ESTATUS %in% c("MATRICULADO","ADMITIDO"),!(CAMPUS %in% c("INA","IND","FIL","VIE","CAP")),(Inicio_Curso==F2 | Inicio_Curso==F1),
          !grepl("prueba|^test|aaron gallo",Nombre,ignore.case = T),NIVEL %in% c("DO","MS","MA")) %>% filter(!duplicated(Matricula))%>%
   mutate(Tipo=if_else(grepl("eje",Programa,ignore.case = T),"Ejecutiva","Online"),
-         Estado=if_else(Inicio_Curso==F1,"Activo","FUTUROS"),
-         `NI-Q`=if_else(Inicio_Curso==F1,names(F1),names(F2)),
+         Estado=if_else(Inicio_Curso<=F1,"Activo","FUTUROS"),
+         `NI-Q`=if_else(Inicio_Curso==F1,names(F1),
+                        if_else(Inicio_Curso<F1,"Anterior",names(F2))),
          Modalidad=if_else(NIVEL=="MS","Máster",if_else(NIVEL=="MA","Maestría","Doctorado")),
          Duracion=if_else(NIVEL=="DO","Cuatrimestral","Bimestral"),
          Etiqueta=if_else(NIVEL=="DO",120,60),

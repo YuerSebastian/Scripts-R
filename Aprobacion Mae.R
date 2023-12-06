@@ -3,7 +3,7 @@ diremail("C:/Users/jsalinba/Documents/Reportes","jsalinba@utel.edu.mx")
 #diremail("//Tut-095/reportes","jsalinba@utel.edu.mx")
 #####-----------Correos Docentes-----------#####
 drive_sd("des",c("Reports/correos_docentes_posgra.csv","CRM$"))
-FI <- ymd("2023-11-27")
+FI <- ymd("2023-12-04")
 while (FI <= Sys.Date()){
   drive_sd("des",c(paste("Niveles/Sabana_POSGRADOS_",FI,".csv",sep=""),"Sabana/Nov-Dic 23$"))
   FI <- FI + days(1)

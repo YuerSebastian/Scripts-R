@@ -2,7 +2,7 @@ sapply(c("MultiLEDS","dplyr","tidyr","lubridate"), library,character.only=T)
 #diremail("//Tut-095/reportes/NR Licenciatura")
 diremail("C:/Users/jsalinba/Documents/Reportes","jsalinba@utel.edu.mx")
 #####-----------Descargas Sabana drive-----------#####
-fecha <- ymd("2023-11-27")
+fecha <- ymd("2023-12-04")
 while (fecha <= Sys.Date()){
   drive_sd("des",c(paste("Niveles/Sabana_POSGRADOS_",fecha,".csv",sep=""),"Sabana/Nov-Dic 23$"))
   print(paste("Niveles/Sabana_POSGRADOS_",fecha,".csv",sep=""))

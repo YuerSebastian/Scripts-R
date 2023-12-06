@@ -25,8 +25,9 @@ Base <- leer(c("Inscritos NIRI","SIR$"),col_select=c("Matricula"=MATRICULA,"Nomb
   filter(DECISION=="35",ESTATUS %in% c("MATRICULADO","PREMATRICULADO","ADMITIDO"),!(CAMPUS %in% c("INA","IND","FIL","VIE","CAP")),(Inicio_Curso==F2 | Inicio_Curso==F1),
          !grepl("prueba|^test|aaron gallo",Nombre,ignore.case = T),NIVEL %in% c("DO","MS","MA")) %>% filter(!duplicated(Matricula))%>%
   mutate(Tipo=if_else(grepl("eje",Programa,ignore.case = T),"Ejecutiva","Online"),
-         Estado=if_else(Inicio_Curso==F1,"Activo","FUTUROS"),
-         `NI-Q`=if_else(Inicio_Curso==F1,names(F1),names(F2)),
+         Estado=if_else(Inicio_Curso<=F1,"Activo","FUTUROS"),
+         `NI-Q`=if_else(Inicio_Curso==F1,names(F1),
+                        if_else(Inicio_Curso<F1,"Anterior",names(F2))),
          Modalidad=if_else(NIVEL=="MS","Máster",if_else(NIVEL=="MA","Maestría","Doctorado")),
          Duracion=if_else(NIVEL=="DO","Cuatrimestral","Bimestral"),
          Etiqueta=if_else(NIVEL=="DO",120,60),
@@ -78,7 +79,7 @@ Rep <- leer(c("Inscritos NIRI","SIR$"),col_select=c(MATRICULA,PROGRAMA,FECHA_DEC
   select(-FECHA_DECISION)
 Base <- left_join(Base,Rep,by="MATPROG")
 Base <- mutate(Base,FECHAINICIO=if_else(is.na(FECHAINICIO),Inicio_Curso,FECHAINICIO),
-               CC=if_else(Estado %in% c("FUTUROS","Activo","Pendiente") & `NI-Q` %in% c("NI 23 OCT","NI 20 NOV","NI 08 ENE","Pendiente"),
+               CC=if_else(Estado %in% c("FUTUROS","Activo","Pendiente","_","Anterior") & `NI-Q` %in% c("NI 23 OCT","NI 20 NOV","NI 08 ENE","Pendiente","_"),
                           if_else(FECHAINICIO > Inicio_Curso,"CC","_"),"_"),
                Estado=if_else(CC=="CC","CC",Estado),
                Inicio_Curso=if_else(CC=="CC",FECHAINICIO,Inicio_Curso)) %>% select(-CC,-FECHAINICIO)

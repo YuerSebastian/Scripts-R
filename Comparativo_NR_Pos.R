@@ -1,7 +1,7 @@
 sapply(c("MultiLEDS","dplyr","tidyr","lubridate"),library,character.only=T)
 diremail("C:/Users/jsalinba/Documents/Reportes","jsalinba@utel.edu.mx")
 #####-----------Descargas NR drive-----------#####
-FI <- ymd("2023-11-27")
+FI <- ymd("2023-12-04")
 while (FI <= Sys.Date()){
   drive_sd("des",c(paste("Niveles/NR_POSGRADOS_",FI,".csv",sep=""),"NR/Nov-Dic 23$"))
   print(paste("Niveles/NR_POSGRADOS_",FI,".csv",sep=""))

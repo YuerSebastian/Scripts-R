@@ -20,7 +20,7 @@ drive_put("C:/Users/jsalinba/Documents/Reportes/Bases/Adicionales y auxiliares/a
 drive_put("C:/Users/jsalinba/Documents/Reportes/Bases/Principales/asignacionBanner.csv","front/")
 
 
-
+#mapply(rep, 1:4, 4:1)
 
 
 
